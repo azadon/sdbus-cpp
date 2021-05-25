@@ -174,6 +174,11 @@ std::tuple<std::string, std::string> ProxyGenerator::processMethods(const Nodes&
         std::string outArgStr, outArgTypeStr;
         std::tie(outArgStr, outArgTypeStr, std::ignore, std::ignore) = argsToNamesAndTypes(outArgs);
 
+        if (!method->doc.empty())
+        {
+            generateDocumentation(definitionSS, method->doc);
+        }
+
         const std::string realRetType = (async && !dontExpectReply ? "sdbus::PendingAsyncCall" : async ? "void" : retType);
         definitionSS << tab << realRetType << " " << nameSafe << "(" << inArgTypeStr << ")" << endl
                 << tab << "{" << endl;
@@ -269,6 +274,10 @@ std::string ProxyGenerator::processProperties(const Nodes& properties) const
         auto propertyArg = std::string("value");
         auto propertyTypeArg = std::string("const ") + propertyType + "& " + propertyArg;
 
+        if (!property->doc.empty())
+        {
+            generateDocumentation(propertySS, property->doc);
+        }
         if (propertyAccess == "read" || propertyAccess == "readwrite")
         {
             propertySS << tab << propertyType << " " << propertyNameSafe << "()" << endl

@@ -225,6 +225,10 @@ std::tuple<std::string, std::string> AdaptorGenerator::processMethods(const Node
                 << argStr << "); })"
                 << annotationRegistration << ";" << endl;
 
+        if (!method->doc.empty())
+        {
+            generateDocumentation(declarationSS, method->doc);
+        }
         declarationSS << tab
                 << "virtual "
                 << (async ? "void" : outArgsToType(outArgs))
@@ -352,6 +356,10 @@ std::tuple<std::string, std::string> AdaptorGenerator::processProperties(const N
         registrationSS << annotationRegistration;
         registrationSS << ";" << endl;
 
+        if (!property->doc.empty())
+        {
+            generateDocumentation(declarationSS, property->doc);
+        }
         if (propertyAccess == "read" || propertyAccess == "readwrite")
             declarationSS << tab << "virtual " << propertyType << " " << propertyNameSafe << "() = 0;" << endl;
         if (propertyAccess == "readwrite" || propertyAccess == "write")

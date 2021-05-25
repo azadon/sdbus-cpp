@@ -3,8 +3,11 @@
  */
 
 #include "xml.h"
+#include "generator_utils.h"
 
 #include <expat.h>
+#include <cstring>
+#include <algorithm>
 
 using namespace sdbuscpp::xml;
 
@@ -191,6 +194,8 @@ struct Document::Expat
         static void start_element_handler(void *data, const XML_Char *name, const XML_Char **atts);
         static void character_data_handler(void *data, const XML_Char *chars, int len);
         static void end_element_handler(void *data, const XML_Char *name);
+
+        static void start_comment_decl_handler(void *data, const XML_Char *name);
 };
 
 void Document::from_xml(const std::string& xml)
@@ -222,6 +227,11 @@ void Document::from_xml(const std::string& xml)
             parser,
             Document::Expat::character_data_handler
     );
+
+    XML_SetCommentHandler(
+            parser,
+            Document::Expat::start_comment_decl_handler
+            );
 
     XML_Status status = XML_Parse(parser, xml.c_str(), xml.length(), true);
 
@@ -275,7 +285,14 @@ void Document::Expat::start_element_handler(void* data, const XML_Char* name, co
         {
             cld = &(cld->back().children);
         }
-        cld->push_back(Node(name, atts));
+        Node n(name, atts);
+        if (!cld->empty() && cld->back().name == "doc")
+        {
+            n.doc = std::move(cld->back().cdata);
+            cld->pop_back();
+        }
+
+        cld->push_back(std::move(n));
 
     }
     doc->m_depth++;
@@ -305,5 +322,57 @@ void Document::Expat::end_element_handler(void* data, const XML_Char* /*name*/)
     Document* doc = static_cast<Document*>(data);
 
     doc->m_depth--;
+}
+
+void Document::Expat::start_comment_decl_handler(void *data, const XML_Char *comment)
+{
+    auto doc = static_cast<Document*>(data);
+
+    if (!strstr(comment, "@brief"))
+    {
+        return;
+    }
+
+    if (!doc->root)
+    {
+        doc->root = new Node("doc");
+        std::stringstream out;
+        auto strstream = std::stringstream(comment);
+        for (std::string line ; std::getline(strstream, line);)
+        {
+            auto fCh = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
+            auto x = std::distance(line.begin(), fCh);
+            if (x > doc->m_depth*4)
+            {
+                line.erase(line.begin(),line.begin() + (doc->m_depth*4));
+            }
+            out << line << std::endl;
+        }
+        doc->root->cdata = out.str();
+    }
+    else
+    {
+        Node::Children* cld = &(doc->root->children);
+
+        for (int i = 1; i < doc->m_depth; ++i)
+        {
+            cld = &(cld->back().children);
+        }
+        Node documentation("doc");
+        std::stringstream out;
+        auto strstream = std::stringstream(comment);
+        for (std::string line ; std::getline(strstream, line);)
+        {
+            auto fCh = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
+            auto x = std::distance(line.begin(), fCh);
+            if (x >= doc->m_depth*4)
+            {
+                line.erase(line.begin(),line.begin() + (doc->m_depth*4));
+            }
+            out << line << std::endl;
+        }
+        documentation.cdata = out.str();
+        cld->push_back(std::move(documentation));
+    }
 }
 

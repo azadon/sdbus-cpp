@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <map>
+#include <algorithm>
 
 #include "generator_utils.h"
 #include "reserved_names.h"
@@ -150,4 +151,17 @@ std::string mangle_name(const std::string& name)
         return name + "_";
     else
         return name;
+}
+
+void generateDocumentation(std::ostringstream &out, const std::string& documentation)
+{
+    out << std::endl << tab << "/** " << std::endl;
+
+    auto strstream = std::stringstream(documentation);
+    for (std::string line ; std::getline(strstream, line);)
+    {
+//        line.erase(line.begin(), std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);}));
+        out << tab << " * " << line << std::endl;
+    }
+    out << tab << " */" << std::endl;
 }

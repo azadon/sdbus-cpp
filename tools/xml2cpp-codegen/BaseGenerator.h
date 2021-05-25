@@ -47,8 +47,6 @@ protected:
         PROXY
     };
 
-    constexpr static const char *tab = "    ";
-
     virtual ~BaseGenerator() {}
 
     /**

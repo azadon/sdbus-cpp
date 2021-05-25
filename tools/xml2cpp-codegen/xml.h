@@ -27,7 +27,7 @@ public:
 
     ~Error() {}
 
-    const char *what() const noexcept { return m_error.c_str(); }
+    const char *what() const noexcept override { return m_error.c_str(); }
 
 private:
     std::string m_error;
@@ -46,13 +46,13 @@ public:
 class Node
 {
 public:
-
         using Attributes = std::map<std::string, std::string>;
         using Children = std::vector<Node>;
 
         std::string name;
         std::string cdata;
         Children children;
+        std::string doc;
 
         Node(std::string n, Attributes a) :
             name(n),
