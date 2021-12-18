@@ -10,7 +10,7 @@
 #include <algorithm>
 
 namespace {
-    constexpr auto DefaultIndentation {4u};
+    constexpr auto DefaultDocIndentation {4u};
 }
 
 using namespace sdbuscpp::xml;
@@ -346,9 +346,9 @@ void Document::Expat::start_comment_decl_handler(void *data, const XML_Char *com
         {
             const auto firstCharacter = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
             const auto offsetToVisibleCharacter = std::distance(line.begin(), firstCharacter);
-            if (offsetToVisibleCharacter > doc->m_depth * DefaultIndentation)
+            if (offsetToVisibleCharacter > doc->m_depth * DefaultDocIndentation)
             {
-                line.erase(line.begin(),line.begin() + (doc->m_depth * DefaultIndentation));
+                line.erase(line.begin(),line.begin() + (doc->m_depth * DefaultDocIndentation));
             }
             out << line << std::endl;
         }
@@ -369,9 +369,9 @@ void Document::Expat::start_comment_decl_handler(void *data, const XML_Char *com
         {
             const auto firstCharacter = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
             const auto offsetToVisibleCharacter = std::distance(line.begin(), firstCharacter);
-            if (offsetToVisibleCharacter >= doc->m_depth * DefaultIndentation)
+            if (offsetToVisibleCharacter >= doc->m_depth * DefaultDocIndentation)
             {
-                line.erase(line.begin(),line.begin() + (doc->m_depth * DefaultIndentation));
+                line.erase(line.begin(),line.begin() + (doc->m_depth * DefaultDocIndentation));
             }
             out << line << std::endl;
         }
