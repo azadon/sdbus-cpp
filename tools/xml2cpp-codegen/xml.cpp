@@ -9,6 +9,10 @@
 #include <cstring>
 #include <algorithm>
 
+namespace {
+    constexpr auto DefaultIndentation {4u};
+}
+
 using namespace sdbuscpp::xml;
 
 std::istream &operator >> (std::istream& in, Document& doc)
@@ -340,11 +344,11 @@ void Document::Expat::start_comment_decl_handler(void *data, const XML_Char *com
         auto strstream = std::stringstream(comment);
         for (std::string line ; std::getline(strstream, line);)
         {
-            auto fCh = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
-            auto x = std::distance(line.begin(), fCh);
-            if (x > doc->m_depth*4)
+            const auto firstCharacter = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
+            const auto offsetToVisibleCharacter = std::distance(line.begin(), firstCharacter);
+            if (offsetToVisibleCharacter > doc->m_depth * DefaultIndentation)
             {
-                line.erase(line.begin(),line.begin() + (doc->m_depth*4));
+                line.erase(line.begin(),line.begin() + (doc->m_depth * DefaultIndentation));
             }
             out << line << std::endl;
         }
@@ -363,11 +367,11 @@ void Document::Expat::start_comment_decl_handler(void *data, const XML_Char *com
         auto strstream = std::stringstream(comment);
         for (std::string line ; std::getline(strstream, line);)
         {
-            auto fCh = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
-            auto x = std::distance(line.begin(), fCh);
-            if (x >= doc->m_depth*4)
+            const auto firstCharacter = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
+            const auto offsetToVisibleCharacter = std::distance(line.begin(), firstCharacter);
+            if (offsetToVisibleCharacter >= doc->m_depth * DefaultIndentation)
             {
-                line.erase(line.begin(),line.begin() + (doc->m_depth*4));
+                line.erase(line.begin(),line.begin() + (doc->m_depth * DefaultIndentation));
             }
             out << line << std::endl;
         }
