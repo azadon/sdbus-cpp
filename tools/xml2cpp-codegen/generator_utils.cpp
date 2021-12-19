@@ -160,7 +160,6 @@ void generateDocumentation(std::ostringstream &out, const std::string& documenta
     auto strstream = std::stringstream(documentation);
     for (std::string line ; std::getline(strstream, line);)
     {
-//        line.erase(line.begin(), std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);}));
         out << tab << " * " << line << std::endl;
     }
     out << tab << " */" << std::endl;

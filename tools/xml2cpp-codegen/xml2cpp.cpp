@@ -49,6 +49,7 @@ void usage(std::ostream& output, const char* programName)
             "Available options:" << endl <<
             "      --proxy=FILE     Generate header file FILE with proxy class (client)" << endl <<
             "      --adaptor=FILE   Generate header file FILE with stub class (server)" << endl <<
+            "      --doxyheader     Copy doxygen documentation from XML to header files" << endl <<
             "  -h, --help           " << endl <<
             "      --verbose        Explain what is being done" << endl <<
             endl <<
@@ -76,6 +77,7 @@ int main(int argc, char **argv)
     const char* adaptor = nullptr;
     const char* xmlFile = nullptr;
     bool verbose = false;
+    bool doxyheader = false;
 
     while (argc > 0)
     {
@@ -108,6 +110,10 @@ int main(int argc, char **argv)
         {
             verbose = true;
         }
+        else if (!strcmp(*argv, "--doxyheader"))
+        {
+            doxyheader = true;
+        }
         else if (**argv == '-')
         {
             std::cerr << "Unknown option " << *argv << endl;
@@ -136,7 +142,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    xml::Document doc;
+    xml::Document doc{doxyheader};
 
     try
     {

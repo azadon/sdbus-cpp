@@ -274,12 +274,10 @@ std::string ProxyGenerator::processProperties(const Nodes& properties) const
         auto propertyArg = std::string("value");
         auto propertyTypeArg = std::string("const ") + propertyType + "& " + propertyArg;
 
-        if (!property->doc.empty())
-        {
-            generateDocumentation(propertySS, property->doc);
-        }
         if (propertyAccess == "read" || propertyAccess == "readwrite")
         {
+            if (!property->doc.empty()) { generateDocumentation(propertySS, property->doc); }
+
             propertySS << tab << propertyType << " " << propertyNameSafe << "()" << endl
                     << tab << "{" << endl;
             propertySS << tab << tab << "return proxy_.getProperty(\"" << propertyName << "\")"
@@ -289,6 +287,7 @@ std::string ProxyGenerator::processProperties(const Nodes& properties) const
 
         if (propertyAccess == "readwrite" || propertyAccess == "write")
         {
+            if (!property->doc.empty()) { generateDocumentation(propertySS, property->doc); }
             propertySS << tab << "void " << propertyNameSafe << "(" << propertyTypeArg << ")" << endl
                     << tab << "{" << endl;
             propertySS << tab << tab << "proxy_.setProperty(\"" << propertyName << "\")"

@@ -89,17 +89,17 @@ public:
 
         Node* root;
 
-        Document();
+        explicit Document(bool copyDoxygen);
         ~Document();
 
-        Document(const std::string& xml);
+        Document(const std::string& xml, bool copyDoxygen);
 
         void from_xml(const std::string& xml);
 
         std::string to_xml() const;
 
 private:
-
+        const bool m_copyDoxygen;
         int m_depth;
 };
 

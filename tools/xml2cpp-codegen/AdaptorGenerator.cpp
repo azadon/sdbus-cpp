@@ -356,14 +356,16 @@ std::tuple<std::string, std::string> AdaptorGenerator::processProperties(const N
         registrationSS << annotationRegistration;
         registrationSS << ";" << endl;
 
-        if (!property->doc.empty())
-        {
-            generateDocumentation(declarationSS, property->doc);
-        }
         if (propertyAccess == "read" || propertyAccess == "readwrite")
+        {
+            if (!property->doc.empty()) { generateDocumentation(declarationSS, property->doc); }
             declarationSS << tab << "virtual " << propertyType << " " << propertyNameSafe << "() = 0;" << endl;
+        }
         if (propertyAccess == "readwrite" || propertyAccess == "write")
+        {
+            if (!property->doc.empty()) { generateDocumentation(declarationSS, property->doc); }
             declarationSS << tab << "virtual void " << propertyNameSafe << "(" << propertyTypeArg << ") = 0;" << endl;
+        }
     }
 
     return std::make_tuple(registrationSS.str(), declarationSS.str());

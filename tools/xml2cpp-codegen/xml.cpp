@@ -10,7 +10,7 @@
 #include <algorithm>
 
 namespace {
-    constexpr auto DefaultDocIndentation {4u};
+    constexpr auto DefaultDocIndentation {"    "};
 }
 
 using namespace sdbuscpp::xml;
@@ -171,14 +171,16 @@ void Node::_raw_xml(std::string& xml, int& depth) const
     }
 }
 
-Document::Document() :
+Document::Document(bool copyDoxygen) :
         root(nullptr),
+        m_copyDoxygen(copyDoxygen),
         m_depth(0)
 {
 }
 
-Document::Document(const std::string &xml) :
+Document::Document(const std::string &xml, bool copyDoxygen) :
         root(nullptr),
+        m_copyDoxygen(copyDoxygen),
         m_depth(0)
 {
     from_xml(xml);
@@ -332,7 +334,7 @@ void Document::Expat::start_comment_decl_handler(void *data, const XML_Char *com
 {
     auto doc = static_cast<Document*>(data);
 
-    if (!strstr(comment, "@brief"))
+    if (!strstr(comment, "@brief") || !doc->m_copyDoxygen)
     {
         return;
     }
@@ -342,14 +344,24 @@ void Document::Expat::start_comment_decl_handler(void *data, const XML_Char *com
         doc->root = new Node("doc");
         std::stringstream out;
         auto strstream = std::stringstream(comment);
+
+        auto firstLineNotProcessed {true};
         for (std::string line ; std::getline(strstream, line);)
         {
             const auto firstCharacter = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
             const auto offsetToVisibleCharacter = std::distance(line.begin(), firstCharacter);
-            if (offsetToVisibleCharacter > doc->m_depth * DefaultDocIndentation)
-            {
-                line.erase(line.begin(),line.begin() + (doc->m_depth * DefaultDocIndentation));
+            line.erase(line.begin(), firstCharacter);
+
+            if (firstLineNotProcessed || strstream.eof() && line.empty()) {
+                firstLineNotProcessed = false;
+                continue;
             }
+
+            if (!line.empty() && line[0] != '@')
+            {
+                out << DefaultDocIndentation;
+            }
+
             out << line << std::endl;
         }
         doc->root->cdata = out.str();
@@ -365,14 +377,23 @@ void Document::Expat::start_comment_decl_handler(void *data, const XML_Char *com
         Node documentation("doc");
         std::stringstream out;
         auto strstream = std::stringstream(comment);
+        auto firstLineNotProcessed {true};
         for (std::string line ; std::getline(strstream, line);)
         {
             const auto firstCharacter = std::find_if(line.begin(), line.end(), [](unsigned char c) { return !std::isspace(c);});
             const auto offsetToVisibleCharacter = std::distance(line.begin(), firstCharacter);
-            if (offsetToVisibleCharacter >= doc->m_depth * DefaultDocIndentation)
-            {
-                line.erase(line.begin(),line.begin() + (doc->m_depth * DefaultDocIndentation));
+            line.erase(line.begin(), firstCharacter);
+
+            if (firstLineNotProcessed || strstream.eof() && line.empty()) {
+                firstLineNotProcessed = false;
+                continue;
             }
+
+            if (!line.empty() && line[0] != '@')
+            {
+                out << DefaultDocIndentation;
+            }
+
             out << line << std::endl;
         }
         documentation.cdata = out.str();
